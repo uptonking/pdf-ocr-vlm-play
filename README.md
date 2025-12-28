@@ -1,6 +1,6 @@
-# 3Ai - Intelligent Document Processing Platform
+# 3pdf-vlm-ocr-play
 
-A full-stack web application that combines OCR (Optical Character Recognition) technology with interactive document annotation capabilities. The platform allows users to upload images or documents, automatically extract text using PaddleOCR, and create interactive form overlays for data extraction and annotation.
+A full-stack web application that combines OCR (Optical Character Recognition) technology with interactive document annotation capabilities. The platform allows users to upload images or pdf files, automatically extract text using PaddleOCR, and create interactive form overlays for data extraction and annotation.
 
 ## 🚀 Features
 
@@ -13,14 +13,17 @@ A full-stack web application that combines OCR (Optical Character Recognition) t
 
 ## 🏗️ Architecture
 
-### Backend (`/backend`)
+### Backend ( `/backend` )
+
 - **FastAPI** server with CORS support
 - **PaddleOCR** integration for text extraction
 - **OpenCV** for image processing
+- **pdf2image** for converting PDF pages to images with poppler
 - **ONNX Runtime** for model inference
 - File upload and processing endpoints
 
-### Frontend (`/my-app`)
+### Frontend ( `/my-app` )
+
 - **Next.js** React application with TypeScript
 - **Ant Design** for UI components
 - **Konva.js** for interactive canvas operations
@@ -48,9 +51,10 @@ A full-stack web application that combines OCR (Optical Character Recognition) t
 ## 📦 Installation
 
 ### Prerequisites
-- Python 3.8+
+
+- Python 3.9+
 - Node.js 18+
-- npm or yarn
+- npm
 
 ### Backend Setup
 
@@ -58,14 +62,14 @@ A full-stack web application that combines OCR (Optical Character Recognition) t
 cd backend
 
 # Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+uv venv
+source .venv/bin/activate  # On Windows: .venv\bin\activate
 
 # Install dependencies
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 
 # Run the server
-python3 -m uvicorn app:app --reload
+uv run python -m uvicorn app:app --reload
 ```
 
 ### Frontend Setup
@@ -82,16 +86,20 @@ npm run dev
 
 ## 🚀 Usage
 
+- note
+  - ⚠️ currently pdf with only one page is tested, multi-page pdf may not work.
 ### CLI Usage (Backend)
+
 ```bash
 # Run OCR on an image
-python3 -m rapidocr.main -img test.png -vis
+uv run python -m rapidocr.main -img test.png -vis
 ```
 
 ### Web Interface
+
 1. Start both backend and frontend servers
 2. Open your browser to `http://localhost:3000`
-3. Upload an image or document
+3. Upload an image or pdf
 4. View OCR results and create interactive annotations
 5. Export processed data in JSON or Markdown format
 
@@ -124,7 +132,7 @@ The application uses default OCR models from PaddleOCR. Models are automatically
 
 ## 📄 License
 
-This project is based on [RapidAI/PaddleOCRModelConvert](https://github.com/RapidAI/PaddleOCRModelConvert).
+apache-2.0
 
 ## 🤝 Contributing
 
@@ -140,4 +148,4 @@ For issues and questions, please open an issue on GitHub.
 
 ---
 
-**Tags:** `ocr`, `document-processing`, `paddleocr`, `fastapi`, `nextjs`, `react`, `typescript`, `text-extraction`, `document-annotation`, `form-builder`, `rapidocr`, `computer-vision`, `ai`, `machine-learning`
+**Tags:** `ocr` , `document-processing` , `paddleocr` , `fastapi` , `nextjs` , `react` , `typescript` , `text-extraction` , `document-annotation` , `form-builder` , `rapidocr` , `computer-vision` , `ai` , `machine-learning`

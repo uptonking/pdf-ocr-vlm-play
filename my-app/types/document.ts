@@ -18,11 +18,15 @@ export interface Page {
     dpi: number;
     rotation: number;
     background?: string;
+    imageUrl?: string;
+    pdfUrl?: string;
     elements: Element[];
 }
 
 export interface DocumentData {
     documentId: string;
+    imageUrl?: string;
+    pdfUrl?: string;
     pages: Page[];
 }
 

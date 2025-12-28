@@ -45,7 +45,7 @@ const Home: React.FC = () => {
     const handlePlaceholderUpload = () => {
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = 'image/*';
+        input.accept = 'image/*,.pdf';
         input.onchange = (e) => {
             const file = (e.target as HTMLInputElement).files?.[0];
             if (file) {
@@ -66,23 +66,38 @@ const Home: React.FC = () => {
 
     const handleImageUpload = async (file: File, imageUrl: string) => {
         console.log('Uploaded image:', file);
-        
+
         setUploadedImageUrl(imageUrl);
         setUploadedFileName(file.name);
-        
+
         setIsUploading(true);
-        message.loading('Processing image...', 0);
-        
+        message.loading('Processing document...', 0);
+
         try {
             const response = await uploadImage(file);
-            
+
             if (response.success && response.data) {
-                setPayload(response.data);
+                // Merge imageUrl/pdfUrl into pages for rendering
+                // Prepend backend URL to convert relative paths to absolute
+                const backendUrl = 'http://localhost:8000';
+                const processedData = {
+                    ...response.data,
+                    pages: response.data.pages.map(page => ({
+                        ...page,
+                        imageUrl: response.data.imageUrl
+                            ? `${backendUrl}${response.data.imageUrl}`
+                            : page.imageUrl,
+                        pdfUrl: response.data.pdfUrl
+                            ? `${backendUrl}${response.data.pdfUrl}`
+                            : page.pdfUrl,
+                    }))
+                };
+                setPayload(processedData);
                 message.destroy();
-                message.success('Image processed successfully!');
+                message.success('Document processed successfully!');
             } else {
                 message.destroy();
-                message.error(response.error || 'Failed to process image');
+                message.error(response.error || 'Failed to process document');
             }
         } catch (error) {
             message.destroy();

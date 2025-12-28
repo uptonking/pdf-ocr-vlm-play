@@ -15,8 +15,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload, disabled = false })
 
     const handleUpload = useCallback((file: File) => {
         const isImage = file.type.startsWith('image/');
-        if (!isImage) {
-            message.error('Only image files are accepted!');
+        const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+        if (!isImage && !isPdf) {
+            message.error('Only image and PDF files are accepted!');
             return false;
         }
 
@@ -50,7 +52,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload, disabled = false })
         fileList,
         beforeUpload: handleUpload,
         onRemove: handleRemove,
-        accept: 'image/*',
+        accept: 'image/*,.pdf',
         disabled,
         showUploadList: {
             showPreviewIcon: true,
@@ -65,10 +67,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload, disabled = false })
                 <InboxOutlined />
             </p>
             <p className="ant-upload-text">
-                Drag and drop image files here or click to select
+                Drag and drop image or PDF files here or click to select
             </p>
             <p className="ant-upload-hint">
-                Only JPG, PNG, GIF files accepted. Maximum 10MB.
+                JPG, PNG, GIF, PDF files accepted. Maximum 10MB.
             </p>
         </Upload.Dragger>
     );

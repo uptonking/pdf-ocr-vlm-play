@@ -51,6 +51,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   const [isPanning, setIsPanning] = useState(false);
   const [lastPosition, setLastPosition] = useState({ x: 0, y: 0 });
   const [renderSize, setRenderSize] = useState({ width: viewportWidth, height: viewportHeight });
+  const [backgroundReady, setBackgroundReady] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -61,7 +62,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
   useEffect(() => {
     const updateSize = () => {
       if (initialPages.length === 0 || currentPageIndex >= initialPages.length) return;
-      
+
       const width = viewportWidth;
       const ratio = initialPages[currentPageIndex].pageSize.height / initialPages[currentPageIndex].pageSize.width;
       const height = width * ratio;
@@ -70,6 +71,15 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
 
     updateSize();
   }, [initialPages, currentPageIndex, viewportWidth]);
+
+  // Reset background ready state when page changes
+  useEffect(() => {
+    setBackgroundReady(false);
+  }, [currentPageIndex]);
+
+  const handleBackgroundRenderComplete = () => {
+    setBackgroundReady(true);
+  };
 
   const currentPage = initialPages[currentPageIndex];
 
@@ -150,17 +160,20 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({
           dpr={dpr}
           viewportWidth={renderSize.width}
           viewportHeight={renderSize.height}
+          onRenderComplete={handleBackgroundRenderComplete}
         />
-        <DomFormLayer
-          elements={rotatedElements}
-          scale={scaleInfo.scale}
-          offsetX={scaleInfo.offsetX}
-          offsetY={scaleInfo.offsetY}
-          viewportWidth={renderSize.width}
-          viewportHeight={renderSize.height}
-          pageSize={currentPage.pageSize}
-          onChange={handleInputChange}
-        />
+        {backgroundReady && (
+          <DomFormLayer
+            elements={rotatedElements}
+            scale={scaleInfo.scale}
+            offsetX={scaleInfo.offsetX}
+            offsetY={scaleInfo.offsetY}
+            viewportWidth={renderSize.width}
+            viewportHeight={renderSize.height}
+            pageSize={currentPage.pageSize}
+            onChange={handleInputChange}
+          />
+        )}
       </DocumentFrame>
     </div>
   );

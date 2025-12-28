@@ -26,13 +26,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/output", StaticFiles(directory="output"), name="output")
-app.mount("/web", StaticFiles(directory="web"), name="web")
-
 OUTPUT_DIR = Path("output")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+app.mount("/output", StaticFiles(directory="output"), name="output")
+app.mount("/web", StaticFiles(directory="web"), name="web")
+
 ocr_engine = RapidOCR()
+
+
+def process_ocr_result(result, width, height):
+    """Process OCR result and return elements array"""
+    if not hasattr(result, "boxes") or result.boxes is None or not hasattr(result, "txts") or result.txts is None or not hasattr(result, "scores") or result.scores is None:
+        return []
+    else:
+        json_str = to_json(result)
+        ocr_data = json.loads(json_str)
+        return [
+            {
+                "id": f"el_{i}",
+                "role": "field",
+                "type": "text",
+                "bbox": [
+                    int(min(pt[0] for pt in item["box"])),
+                    int(min(pt[1] for pt in item["box"])),
+                    int(max(pt[0] for pt in item["box"])),
+                    int(max(pt[1] for pt in item["box"]))
+                ] if "box" in item else [0, 0, 0, 0],
+                "text": item.get("txt", ""),
+                "confidence": item.get("score", 1.0)
+            }
+            for i, item in enumerate(ocr_data)
+        ]
 
 
 @app.post("/ocr")
@@ -82,19 +107,43 @@ async def upload_file_api(file: UploadFile = File(...)):
     with save_path.open("wb") as f:
         shutil.copyfileobj(file.file, f)
 
+    # Handle PDF files
+    if ext.lower() == ".pdf":
+        from pdf2image import convert_from_path
+        # Convert first page of PDF to image
+        images = convert_from_path(str(save_path), dpi=300, first_page=1, last_page=1)
+        if images:
+            # Save the first page as image for OCR
+            pdf_image_path = OUTPUT_DIR / f"{file_id}_page.png"
+            images[0].save(pdf_image_path, "PNG")
+            width, height = images[0].width, images[0].height
+            result = ocr_engine(str(pdf_image_path))
+            # Return PDF URL for frontend rendering
+            return JSONResponse(content={
+                "success": True,
+                "data": {
+                    "documentId": f"doc_{int(time.time())}_{file_id[:8]}",
+                    "pdfUrl": f"/output/{save_path.name}",
+                    "pages": [{
+                        "pageIndex": 0,
+                        "pageSize": {"width": width, "height": height},
+                        "dpi": 300,
+                        "rotation": 0,
+                        "elements": process_ocr_result(result, width, height)
+                    }]
+                }
+            })
+        else:
+            return JSONResponse(content={"success": False, "error": "Failed to convert PDF"}, status_code=500)
+
+    # Handle image files
     img = cv2.imread(str(save_path))
     if img is not None:
         height, width = img.shape[:2]
     else:
-        width, height = 1000, 1400 
+        width, height = 1000, 1400
 
     result = ocr_engine(str(save_path))
-
-    if not hasattr(result, "boxes") or result.boxes is None or not hasattr(result, "txts") or result.txts is None or not hasattr(result, "scores") or result.scores is None:
-        ocr_data = []
-    else:
-        json_str = to_json(result)
-        ocr_data = json.loads(json_str)
 
     document_id = f"doc_{int(time.time())}_{file_id[:8]}"
     page = {
@@ -102,25 +151,11 @@ async def upload_file_api(file: UploadFile = File(...)):
         "pageSize": {"width": width, "height": height},
         "dpi": 300,
         "rotation": 0,
-        "elements": [
-            {
-                "id": f"el_{i}",
-                "role": "field",
-                "type": "text",
-                "bbox": [
-                    int(min(pt[0] for pt in item["box"])),
-                    int(min(pt[1] for pt in item["box"])),
-                    int(max(pt[0] for pt in item["box"])),
-                    int(max(pt[1] for pt in item["box"]))
-                ] if "box" in item else [0, 0, 0, 0],
-                "text": item.get("txt", ""),
-                "confidence": item.get("score", 1.0)
-            }
-            for i, item in enumerate(ocr_data)
-        ]
+        "elements": process_ocr_result(result, width, height)
     }
     data = {
         "documentId": document_id,
+        "imageUrl": f"/output/{save_path.name}",  # Add imageUrl for images
         "pages": [page]
     }
     return JSONResponse(content={"success": True, "data": data})
