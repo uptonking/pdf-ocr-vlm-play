@@ -37,7 +37,7 @@ const PlaceholderViewer: React.FC<PlaceholderViewerProps> = ({ onUploadClick }) 
                             }}
                         />
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    {/* <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <Image
                             src="/QR_Code.png"
                             alt="QR Code"
@@ -47,14 +47,14 @@ const PlaceholderViewer: React.FC<PlaceholderViewerProps> = ({ onUploadClick }) 
                                 borderRadius: '8px'
                             }}
                         />
-                    </div>
+                    </div> */}
                     
                     <div style={{ textAlign: 'center' }}>
                         <Text style={{ 
                             fontSize: '12px', 
                             color: '#999'
                         }}>
-                            Thank you for visiting our 3Ai92 system.
+                            upload image or pdf and get text.
                         </Text>
                     </div>
                 </Space>

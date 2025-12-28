@@ -22,7 +22,7 @@ const SidebarHeader: React.FC<SidebarHeaderProps> = ({ collapsed, onToggle }) =>
         }}>
             {!collapsed && (
                 <span style={{ color: 'white', fontWeight: 600, fontSize: 16 }}>
-                    ツール_3Ai92
+                    PDF OCR
                 </span>
             )}
             <Button

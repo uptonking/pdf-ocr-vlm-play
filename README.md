@@ -1,7 +1,8 @@
-# 3pdf-vlm-ocr-play
+# pdf-vlm-ocr-play
 
 A full-stack web application that combines OCR (Optical Character Recognition) technology with interactive document annotation capabilities. The platform allows users to upload images or pdf files, automatically extract text using PaddleOCR, and create interactive form overlays for data extraction and annotation.
 
+![pdf ocr example](./assets/images/pdf-ocr-vlm-demo.png)
 ## 🚀 Features
 
 - **Advanced OCR Processing**: Powered by PaddleOCR with RapidOCR integration for accurate text recognition
